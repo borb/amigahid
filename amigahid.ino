@@ -615,10 +615,10 @@ bool AmigaHID::KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf)
     if ((len == 0) || (len <= 2))
         return false;
 
-    for (uint8_t i = 2; i < len; i++) {
+    for (uint8_t i = 2; i < len; i++)
         if (code == buf[i])
             return true;
-    }
+
     return false;
 }
 
@@ -626,15 +626,9 @@ uint8_t AmigaHID::XlateHIDToAmiga(uint8_t code)
 {
     uint8_t i;
 
-    char *buf = malloc(256);
-    snprintf(buf, 256, "Translating HID keycode 0x%02x", code);
-    DebugPrint(buf);
-    free(buf);
-
     for (i = 0; key_map[i].hid_keycode; i++)
-        if (key_map[i].hid_keycode == code) {
+        if (key_map[i].hid_keycode == code)
             return key_map[i].amiga_keycode;
-        }
 
     // sadly avr-libc doesn't support exceptions (https://www.nongnu.org/avr-libc/user-manual/FAQ.html#faq_cplusplus)
     // 0xff is a magic number in this scenario (though i could cheat and use some sort of sideband global, urgh).
