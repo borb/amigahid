@@ -473,17 +473,19 @@ void AmigaHID::SendAmiga(uint8_t keycode)
     // https://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0173.html
     // (if link is dead, amiga dev cd 2.1 keyboard timing diagram)
     for (i = 0; i < 8; i++) {
-        if (keycode & bit)
+        if (skeycode & bit)
             AMIGAHW_DATA_PORT &= ~(1 << AMIGAHW_DATA);
         else
             AMIGAHW_DATA_PORT |= (1 << AMIGAHW_DATA);
 
-        bit >>= 1;
         _delay_us(20); // hold keyboard data line low for 20us before sending clock
         AMIGAHW_CLOCK_PORT &= ~(1 << AMIGAHW_CLOCK);
         _delay_us(20); // hold clock low for 20us
         AMIGAHW_CLOCK_PORT |= (1 << AMIGAHW_CLOCK);
         _delay_us(50); // hold clock high for 50us
+
+        // rshift bit before next iteration
+        bit >>= 1;
     }
 
     AMIGAHW_DATA_PORT |= (1 << AMIGAHW_DATA);
