@@ -341,6 +341,7 @@ class AmigaHID : public HIDComposite
 {
     uint8_t old_buf_len;
     uint8_t *old_buf;
+    bool caps_lock;
 
     public:
         AmigaHID(USB *p) : HIDComposite(p) {};
@@ -417,6 +418,9 @@ void AmigaHID::Setup(USB *p)
     }
 
     UsbDEBUGlvl = DEBUG_USB;
+
+    // caps lock defaults to off
+    caps_lock = false;
 
     // delay whilst devices enumerate (may not be needed)
     delay(200);
@@ -500,7 +504,11 @@ void AmigaHID::SendAmiga(uint8_t keycode)
 // called on each packet event returned
 void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len, uint8_t *buf)
 {
-    uint8_t i;
+    uint8_t i, translated_code;
+    bool caps_trap;
+
+    // i hate caps lock so much
+    caps_trap = false;
 
     // process the buffer contents
     if (len && buf)  {
@@ -547,17 +555,50 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
         if (old_buf_len && (old_buf != 0)) {
             for (i = 2; i < old_buf_len; i++) {
                 // check if a key in the last buffer iteration is absent from the current iteration, and release it if so
-                if (old_buf[i] && !KeyInBuffer(old_buf[i], len, buf))
-                    SendAmiga(XlateHIDToAmiga(old_buf[i]) | 0x80); // key up
+                if (old_buf[i] && !KeyInBuffer(old_buf[i], len, buf)) {
+                    translated_code = XlateHIDToAmiga(old_buf[i]);
+
+                    if (translated_code == AMIGA_CAPSLOCK) {
+                        DebugPrint("Caps lock on up event");
+                        caps_trap = true;
+                    }
+
+                    if (caps_trap && caps_lock)
+                        DebugPrint("Not sending key up event for toggling caps lock on");
+                    else
+                        SendAmiga(translated_code | 0x80); // key up
+                }
             }
         }
 
         // handle key down events
         for (i = 2; i < len; i++) {
             // check if a key in the current buffer iteration is absent from the previous iteration, and send down event if so
-            if (buf[i] && !KeyInBuffer(buf[i], old_buf_len, old_buf))
-                SendAmiga(XlateHIDToAmiga(buf[i])); // key down
+            if (buf[i] && !KeyInBuffer(buf[i], old_buf_len, old_buf)) {
+                translated_code = XlateHIDToAmiga(buf[i]);
+
+                // check if that key was caps lock and adjust the class property (only on down)
+                if (translated_code == AMIGA_CAPSLOCK) {
+                    DebugPrint("Caps lock on down event");
+                    if (caps_lock) {
+                        DebugPrint("Turning caps lock off");
+                        caps_lock = false;
+                        caps_trap = true;
+                    } else {
+                        DebugPrint("Turning caps lock on");
+                        caps_lock = true;
+                        caps_trap = true;
+                    }
+                }
+
+                if (caps_trap && !caps_lock)
+                    DebugPrint("Not sending key down event for toggling caps lock off");
+                else
+                    SendAmiga(translated_code); // key down
+            }
         }
+
+        DebugPrint("[end processing iteration]\n");
     }
 
     // after processing, store the current buffer iteration so we can use it as a reference for next time
