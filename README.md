@@ -1,6 +1,6 @@
 # amigahid
 
-please read the disclaimer first. i don't want the blood of innocent amigas on my hands.
+please read the disclaimer first. i don't want anyone to be responsible for breaking any hardware.
 
 ## introduction
 
