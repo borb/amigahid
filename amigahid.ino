@@ -68,6 +68,7 @@
 #define MOD_RCTRL       4
 #define MOD_RSHIFT      5
 #define MOD_RALT        6
+#define MOD_RWIN        7
 
 // modifier test
 #define TEST_MOD(A, B) (A & (1 << B))
@@ -529,7 +530,12 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
             if ((!TEST_MOD(buf[0], MOD_LCTRL) && !TEST_MOD(buf[0], MOD_RCTRL)) &&
                 (TEST_MOD(old_buf[0], MOD_LCTRL) || TEST_MOD(old_buf[0], MOD_RCTRL))) SendAmiga(AMIGA_CTRL | 0x80); // ctrl up
 
-            // @todo right windows key? is that the eighth bit?
+            // right windows key is the only modifier we don't handle here, but aside from several apple keyboards,
+            // i have no pc keyboards with one. and inexplicably the apple keyboard doesn't work (likely power, plus
+            // apple's keyboard is even a pain in the ass to use on actual apple devices owing to REALLY odd
+            // proprietary power commands outside of the normal usb descriptor block specification, like idevices).
+            // since apple keyboards don't have menu, but they don't work anyway (see previous moan), i am not going
+            // to lose any sleep; menu is right-amiga.
         }
 
         // @todo stupid question; do we have to manage ctrl-am-am and assert reset? erm, i think i just answered
