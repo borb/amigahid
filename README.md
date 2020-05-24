@@ -12,7 +12,7 @@ it was developed with the amiga 500 in mind with the purpose of allowing an exte
 
 ## usage
 
-this firmware uses the excellent [usb host shield](https://felis.github.io/USB_Host_Shield_2.0/) library, which in turn depends on the arduino library. it was developed using an arduino board and in the arduino ide. whilst i have no doubt it will build using other tools (platformio?) or gcc-avr + avr-libc, i would strongly recomment using the arduino ide to produce the firmware prior to uploading it to your avr if you are not using an arduino directly.
+this firmware uses the excellent [usb host shield](https://felis.github.io/USB_Host_Shield_2.0/) library, which in turn depends on the arduino library. it was developed using an arduino board and in the arduino ide. whilst i have no doubt it will build using other tools (platformio?) or gcc-avr + avr-libc, i would strongly recommend using the arduino ide to produce the firmware prior to uploading it to your avr if you are not using an arduino directly.
 
 near the top of the source (in [amigahid.ino](amigahid.ino)) there are `AMIGAHW_` definitions which declare which pins to attach the amiga 500 keyboard header to. carefully read these and attach using dupont wires or whatever your favourite patching mechanism is. if you want to relocate to pins more conveient for you, then adjust the pins but do not forget to adjust the corresponding `_PORT` (defines Port Output RegisTer) and `_DIRREG` (DDR, Data Direction Reigster) definitions. connect a common ground between the amiga keyboard header and the avr/arduino. this may magically spring to life.
 
