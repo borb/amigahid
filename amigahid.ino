@@ -192,6 +192,8 @@ struct hidamigatable
 
 // this layout is very US-centric right now, which may not be a bad thing, but @todo check for non-US maps
 // interesting how hid keyboards are alphabetical, amiga are qwerty layout. actually not interesting at all.
+// also: @todo replace this with an indexable array so we refer to it by offset, as per
+// drivers/hid/hid-input.c line 27 in the linux kernel source 
 static const struct hidamigatable key_map[] = {
     // 0x00 is no keypress (which we already ignore)
     // 0x01 phantom key - in all slots if too many keys are pressed (i have no keyboards which produce this)
