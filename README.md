@@ -16,6 +16,29 @@ this firmware uses the excellent [usb host shield](https://felis.github.io/USB_H
 
 near the top of the source (in [amigahid.ino](amigahid.ino)) there are `AMIGAHW_` definitions which declare which pins to attach the amiga 500 keyboard header to. carefully read these and attach using dupont wires or whatever your favourite patching mechanism is. if you want to relocate to pins more convenient for you, then adjust the pins but do not forget to adjust the corresponding `_PORT` (defines Port Output RegisTer) and `_DIRREG` (DDR, Data Direction Register) definitions. connect a common ground between the amiga keyboard header and the avr/arduino. this may magically spring to life.
 
+the default mapping is: PL0 for amiga keyboard clock signal, PL2 for amiga keyboard data signal, and PL4 for amiga keyboard reset signal.
+
+attach PL0 to amiga 500 keyboard pin 1, PL2 to pin 2 and PL4 to pin 3. attach ground on your board to pin 6.
+
+after connecting, it may look like this:
+
+![photograph of arduino mega adk attached to a500 keyboard port](assets/arduino-amiga.jpg)
+
+for reference, the amiga 500 keyboard header has these mappings:
+
+| pin# | signal | meaning  | notes |
+|------|--------|----------|-------|
+| 1    | kclk   | clock    |       |
+| 2    | kdat   | data     |       |
+| 3    | /res   | reset    | issues a hard reset |
+| 4    | +5v    | 5v power |       |
+| 5    | nc     | nc       | not connected (often physically absent) |
+| 6    | gnd    | ground   | though if powering arduino/avr from psu, may be able to use that ground line |
+| 7    | pwr    | power    | provides power to keyboard power led to indicate amiga is on/audio filter status |
+| 8    | drv    | drive    | indicates floppy drive activity |
+
+i do not recommend attempting to power the arduino from the keyboard header. the floppy drive header may be more suitable but i have not tested this.
+
 ## disclaimer
 
 this may well not work. it may cause the amiga, arduino, keyboard and your desk, curtains and walls to catch fire. the USER accepts any and all responsibility for any loss of hardware or data. the author accepts no responsibility. be careful out there. really, i'm not kidding here. amigas, particularly the venerable amiga 500, are in dwindling supply and at 30 years plus of age it makes sense to think of their safety. take whatever precautions you need to, double/triple/quadruple check EVERYTHING and then get a friend to double/triple/quadruple check everything.
