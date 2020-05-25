@@ -55,7 +55,7 @@ my utmost thanks to:
 
 ## license
 
-this software builds on the back of giants. originally, this was ~650 lines of mashed up C++-ish code but the real heroes are the people who wrote the libraries i used. the amount of effort put into this pales in comparison to their contribution, so it stands to reason (to me, at least) that this remain GPL v2.
+this software builds on the backs of giants. originally, this was ~650 lines of mashed up C++-ish code but the real heroes are the people who wrote the libraries i used. the amount of effort put into this pales in comparison to their contribution, so it stands to reason (to me, at least) that this remain GPL v2.
 
 ## author
 
