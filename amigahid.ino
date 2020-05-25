@@ -60,6 +60,9 @@
 #define DEBUG           1
 #define DEBUG_USB       0x80 // 0xff for maximum, 0x00 for off
 
+// old keyboard hid buffer size
+#define HID_BUF_MAX     32
+
 // usbhid input modifier bitmap (byte 0 of hid buffer)
 #define MOD_LCTRL       0
 #define MOD_LSHIFT      1
@@ -363,7 +366,7 @@ class AmigaHID : public HIDComposite
 void AmigaHID::Setup(USB *p)
 {
     old_buf_len = 8;
-    old_buf = malloc(32);
+    old_buf = malloc(HID_BUF_MAX);
     uint8_t i;
 
     for (i = 0; i < 8; i++)
@@ -600,6 +603,10 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
     }
 
     // after processing, store the current buffer iteration so we can use it as a reference for next time
+    if (len > HID_BUF_MAX) {
+        DebugPrint("FATAL ERROR: HID iteration has buffer exceeding size of HID_BUF_MAX. Aborting all operations.");
+        abort();
+    }
     old_buf_len = len;
     memcpy(old_buf, buf, len); // sure hope size_t can occupy uint8_t
 }
