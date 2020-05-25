@@ -363,7 +363,7 @@ class AmigaHID : public HIDComposite
 void AmigaHID::Setup(USB *p)
 {
     old_buf_len = 8;
-    old_buf = malloc(8);
+    old_buf = malloc(32);
     uint8_t i;
 
     for (i = 0; i < 8; i++)
@@ -601,9 +601,6 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
 
     // after processing, store the current buffer iteration so we can use it as a reference for next time
     old_buf_len = len;
-    if (old_buf)
-        free(old_buf);
-    old_buf = malloc(len);
     memcpy(old_buf, buf, len); // sure hope size_t can occupy uint8_t
 }
 
