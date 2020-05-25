@@ -34,6 +34,10 @@
 #include <SPI.h>
 #include <stdio.h>
 
+// debug
+#define DEBUG           0
+#define DEBUG_USB       0x80 // 0xff for maximum, 0x00 for off
+
 /**
  * arduino pins we're going to use (@todo what to do with floppy & power/filter in future?).
  * if you change these, don't forget to update the port and data direction register to the corresponding
@@ -56,10 +60,6 @@
                         PORTL
 #define AMIGAHW_RESET_DIRREG \
                         DDRL
-
-// debug
-#define DEBUG           1
-#define DEBUG_USB       0x80 // 0xff for maximum, 0x00 for off
 
 // old keyboard hid buffer size
 #define HID_BUF_MAX     32
