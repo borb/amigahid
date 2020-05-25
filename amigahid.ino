@@ -191,6 +191,15 @@
 #define AMIGA_TERMPOWER 0xfe
 #define AMIGA_UNKNOWN   0xff
 
+// setReport bitmasks for keyboard status leds
+#define REP_NUMLOCK     0x01
+#define REP_CAPSLOCK    0x02
+#define REP_SCROLLLOCK  0x04
+
+// bInterfaceProtocol constants
+#define B_IF_PROTOCOL_KEYBOARD \
+                        0x01
+
 struct hidamigatable
 {
     uint8_t hid_keycode;
@@ -453,7 +462,7 @@ bool AmigaHID::SelectInterface(uint8_t iface, uint8_t proto)
      * bInterfaceProtocol 1 is keyboard, 2 is mouse; some keyboards have a mouse controller even if it's
      * never used
      */
-    if (proto == 1) {
+    if (proto == B_IF_PROTOCOL_KEYBOARD) {
         DebugPrint("HID keyboard attached");
         return true;
     }
@@ -526,7 +535,7 @@ void AmigaHID::SendAmiga(uint8_t keycode)
 // called on each packet event returned
 void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len, uint8_t *buf)
 {
-    uint8_t i, translated_code;
+    uint8_t i, translated_code, leds;
     bool caps_trap;
 
     // i hate caps lock so much
@@ -617,6 +626,19 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
                 else
                     SendAmiga(translated_code); // key down
             }
+        }
+
+        // change caps lock led on keyboard (amiga has no num/scroll lock leds, so ignore)
+        if (caps_trap) {
+            DebugPrint("Calling hid::SetReport to update keyboard LED status");
+
+            if (caps_lock)
+                leds = REP_CAPSLOCK;
+            else
+                leds = 0;
+
+            // ep, iface, report_type, report_id, nbytes, dataptr
+            hid->SetReport(0, 0, 2, 0, 1, &leds);
         }
 
         /**
