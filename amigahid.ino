@@ -465,6 +465,12 @@ void AmigaHID::SendAmiga(uint8_t keycode)
     // this is paraphrased somewhat, since i'm not left shifting before reaching here.
     uint8_t i, bit = 0x80, skeycode;
 
+    // check for unknown keycode and ignore
+    if (keycode == AMIGA_UNKNOWN) {
+        DebugPrint("Cowardly refusing to send unknown keycode to Amiga.");
+        return;
+    }
+
     // roll keycode left, moving bit 7 to bit 0 if needed
     skeycode = keycode;
     skeycode <<= 1;
@@ -658,13 +664,11 @@ uint8_t AmigaHID::XlateHIDToAmiga(uint8_t code)
         if (key_map[i].hid_keycode == code)
             return key_map[i].amiga_keycode;
 
-    // sadly avr-libc doesn't support exceptions (https://www.nongnu.org/avr-libc/user-manual/FAQ.html#faq_cplusplus)
-    // 0xff is a magic number in this scenario (though i could cheat and use some sort of sideband global, urgh).
-    // if it ever reaches the amiga, its behaviour is unknown (likely innocuous) as it is declared in adc 2.1 to be
-    // "unused" (formerly interrupt). if it is interrupt, that's useful. or not useful if an unmapped key causes a
-    // debugger freeze.
-    // side note: 0xff will be sent twice, because it'll be sent for down & 0xff | 0x80, which is 0xff on key up.
-    // @todo in early versions of this firmware, this is not a problem, but will likely need fixing.
+    /**
+     * avr-libc doesn't support exceptions, otherwise i'd use one here.
+     * (https://www.nongnu.org/avr-libc/user-manual/FAQ.html#faq_cplusplus)
+     * 0xff is a magic number in amiga keyboard terms, but SendAmiga will filter it out and ignore it.
+     */
     return 0xff;
 }
 
