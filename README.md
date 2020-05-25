@@ -60,3 +60,5 @@ this software builds on the backs of giants. originally, this was ~650 lines of 
 ## author
 
 nine &lt;[nine@aphlor.org](mailto:nine@aphlor.org)&gt;
+
+i make no apology for the waffling comments in the source code: hopefully someone will one day read them and think "actually, that may be useful". or turn them into a book. or use them as an example of what not to do in source code. or all of the previous things.
