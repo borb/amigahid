@@ -258,7 +258,7 @@ static const struct hidamigatable key_map[] = {
     { 0x36, AMIGA_COMMA },
     { 0x37, AMIGA_PERIOD },
     { 0x38, AMIGA_SLASH },
-    { 0x39, AMIGA_CAPSLOCK }, // @todo not sure, but doesn't caps lock not have an amiga up event?
+    { 0x39, AMIGA_CAPSLOCK },
     { 0x3a, AMIGA_F1 },
     { 0x3b, AMIGA_F2 },
     { 0x3c, AMIGA_F3 },
