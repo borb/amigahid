@@ -35,7 +35,7 @@
 #include <stdio.h>
 
 // debug
-#define DEBUG           0
+//#define DEBUG           1
 #define DEBUG_USB       0x80 // 0xff for maximum, 0x00 for off
 
 /**
