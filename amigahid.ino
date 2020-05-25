@@ -513,7 +513,7 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
     // process the buffer contents
     if (len && buf)  {
         // first byte is the modifier bitmap; note that some keys such as menu are not modifiers
-        if (old_buf_len && (buf[0] != old_buf[0])) {
+        if (buf[0] != old_buf[0]) {
             // modifier state change
 
             if (TEST_MOD(buf[0], MOD_LALT) && !TEST_MOD(old_buf[0], MOD_LALT)) SendAmiga(AMIGA_LALT); // left alt down
@@ -552,22 +552,20 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
         // my own question...
 
         // handle key up events
-        if (old_buf_len && (old_buf != 0)) {
-            for (i = 2; i < old_buf_len; i++) {
-                // check if a key in the last buffer iteration is absent from the current iteration, and release it if so
-                if (old_buf[i] && !KeyInBuffer(old_buf[i], len, buf)) {
-                    translated_code = XlateHIDToAmiga(old_buf[i]);
+        for (i = 2; i < old_buf_len; i++) {
+            // check if a key in the last buffer iteration is absent from the current iteration, and release it if so
+            if (old_buf[i] && !KeyInBuffer(old_buf[i], len, buf)) {
+                translated_code = XlateHIDToAmiga(old_buf[i]);
 
-                    if (translated_code == AMIGA_CAPSLOCK) {
-                        DebugPrint("Caps lock on up event");
-                        caps_trap = true;
-                    }
-
-                    if (caps_trap && caps_lock)
-                        DebugPrint("Not sending key up event for toggling caps lock on");
-                    else
-                        SendAmiga(translated_code | 0x80); // key up
+                if (translated_code == AMIGA_CAPSLOCK) {
+                    DebugPrint("Caps lock on up event");
+                    caps_trap = true;
                 }
+
+                if (caps_trap && caps_lock)
+                    DebugPrint("Not sending key up event for toggling caps lock on");
+                else
+                    SendAmiga(translated_code | 0x80); // key up
             }
         }
 
