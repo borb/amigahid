@@ -445,8 +445,8 @@ void AmigaHID::DebugPrint(char *msg)
 bool AmigaHID::SelectInterface(uint8_t iface, uint8_t proto)
 {
     /**
-     * bInterfaceProtocol 1 is keyboard, 2 is mouse; some keyboards have a mouse controller even if it's never used
-     * somehow linux detects these void endpoints and ignores them; @todo read usbhid and implement?
+     * bInterfaceProtocol 1 is keyboard, 2 is mouse; some keyboards have a mouse controller even if it's
+     * never used
      */
     if (proto == 1) {
         DebugPrint("HID keyboard attached");
