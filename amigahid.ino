@@ -63,6 +63,9 @@
 // old keyboard hid buffer size
 #define HID_BUF_MAX     32
 
+// hid code for menu key
+#define HID_MENU_CODE   0x65
+
 // usbhid input modifier bitmap (byte 0 of hid buffer)
 #define MOD_LCTRL       0
 #define MOD_LSHIFT      1
@@ -360,6 +363,7 @@ class AmigaHID : public HIDComposite
         bool KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf);
         uint8_t XlateHIDToAmiga(uint8_t code);
         void SendAmigaReset();
+        bool TrinityCheck(uint8_t len, uint8_t *buf);
 };
 
 // set the board up before we start
@@ -551,9 +555,6 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
             // to lose any sleep; menu is right-amiga.
         }
 
-        // @todo stupid question; do we have to manage ctrl-am-am and assert reset? erm, i think i just answered
-        // my own question...
-
         // handle key up events
         for (i = 2; i < old_buf_len; i++) {
             // check if a key in the last buffer iteration is absent from the current iteration, and release it if so
@@ -599,6 +600,16 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
             }
         }
 
+        // check for ctrl-amiga-amiga and issue reset.
+        // @todo in future, implement "reset warning" as per
+        // https://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0178.html
+        // i notice that linux-m68k on the amiga (waaaay back in the mid 1990s) used to emergency sync in
+        // preparation for hard reset then attempt to drag out the reset until the very last ms in order to
+        // prevent data loss. i don't actually know if amigaos responds to AMIGA_RESET (0x78). i'd like to think
+        // it does (adcd suggests it does).
+        if ((TrinityCheck(old_buf_len, old_buf) == true) && (TrinityCheck(len, buf) == false))
+            SendAmigaReset();
+
         DebugPrint("[end processing iteration]\n");
     }
 
@@ -609,6 +620,21 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
     }
     old_buf_len = len;
     memcpy(old_buf, buf, len); // sure hope size_t can occupy uint8_t
+}
+
+bool AmigaHID::TrinityCheck(uint8_t len, uint8_t *buf)
+{
+    uint8_t counter;
+
+    // (n.b. i'm being epic lazy here and ignoring right control for reset purposes. i am the worst.)
+    if (buf[0] & (1 << MOD_LCTRL))
+        counter++;
+    if (buf[0] & (1 << MOD_LWIN))
+        counter++;
+    if (KeyInBuffer(HID_MENU_CODE, len, buf))
+        counter++;
+
+    return counter == 3;
 }
 
 bool AmigaHID::KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf)
