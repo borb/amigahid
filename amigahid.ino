@@ -34,10 +34,11 @@
 #include <SPI.h>
 #include <stdio.h>
 
-// arduino pins we're going to use (@todo what to do with floppy &
-// power/filter in future?).
-// if you change these, don't forget to update the port and data
-// direction register to the corresponding port, e.g. DB0/PORTB/DDRB
+/**
+ * arduino pins we're going to use (@todo what to do with floppy & power/filter in future?).
+ * if you change these, don't forget to update the port and data direction register to the corresponding
+ * port, e.g. DB0/PORTB/DDRB
+ */
 #define AMIGAHW_CLOCK   PL0
 #define AMIGAHW_CLOCK_PORT \
                         PORTL
@@ -196,10 +197,12 @@ struct hidamigatable
     uint8_t amiga_keycode;
 };
 
-// this layout is very US-centric right now, which may not be a bad thing, but @todo check for non-US maps
-// interesting how hid keyboards are alphabetical, amiga are qwerty layout. actually not interesting at all.
-// also: @todo replace this with an indexable array so we refer to it by offset, as per
-// drivers/hid/hid-input.c line 27 in the linux kernel source 
+/**
+ * this layout is very US-centric right now, which may not be a bad thing, but @todo check for non-US maps
+ * interesting how hid keyboards are alphabetical, amiga are qwerty layout. actually not interesting at all.
+ * also: @todo replace this with an indexable array so we refer to it by offset, as per
+ * drivers/hid/hid-input.c line 27 in the linux kernel source.
+ */
 static const struct hidamigatable key_map[] = {
     // 0x00 is no keypress (which we already ignore)
     // 0x01 phantom key - in all slots if too many keys are pressed (i have no keyboards which produce this)
@@ -394,8 +397,10 @@ void AmigaHID::Setup(USB *p)
     AMIGAHW_DATA_PORT |= (1 << AMIGAHW_DATA);
     AMIGAHW_RESET_PORT |= (1 << AMIGAHW_RESET);
 
-    // setup the amiga keyboard sync signal timer; TIMER1 is used because it's 16-bit
-    // (thanks again for t33bu's wireless-amiga-keyboard for avr)
+    /**
+     * setup the amiga keyboard sync signal timer; TIMER1 is used because it's 16-bit
+     * (thanks again for t33bu's wireless-amiga-keyboard for avr-side logic)
+     */
     TCCR1B |= (1 << WGM12);
     TIMSK1 |= (1 << OCIE1A);
     OCR1AH = 0x3d;
@@ -461,8 +466,10 @@ bool AmigaHID::SelectInterface(uint8_t iface, uint8_t proto)
 // send a keycode to the amiga
 void AmigaHID::SendAmiga(uint8_t keycode)
 {
-    // again, huge thanks to t33bu for the wireless-amiga-keyboard source. so useful.
-    // this is paraphrased somewhat, since i'm not left shifting before reaching here.
+    /**
+     * again, huge thanks to t33bu for the wireless-amiga-keyboard source. so useful.
+     * this is paraphrased somewhat, since i'm not left shifting before reaching here.
+     */
     uint8_t i, bit = 0x80, skeycode;
 
     // check for unknown keycode and ignore
@@ -489,9 +496,11 @@ void AmigaHID::SendAmiga(uint8_t keycode)
         DebugPrint("Sending keydown for code to Amiga");
 #endif
 
-    // this explains things very well:
-    // https://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0173.html
-    // (if link is dead, amiga dev cd 2.1 keyboard timing diagram)
+    /**
+     * this explains things very well:
+     * https://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0173.html
+     * (if link is dead, amiga dev cd 2.1 keyboard timing diagram)
+     */
     for (i = 0; i < 8; i++) {
         if (skeycode & bit)
             AMIGAHW_DATA_PORT &= ~(1 << AMIGAHW_DATA);
@@ -544,21 +553,25 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
             if (TEST_MOD(buf[0], MOD_LWIN) && !TEST_MOD(old_buf[0], MOD_LWIN)) SendAmiga(AMIGA_LAMIGA); // left windows key down
             if (!TEST_MOD(buf[0], MOD_LWIN) && TEST_MOD(old_buf[0], MOD_LWIN)) SendAmiga(AMIGA_LAMIGA | 0x80); // left windows key up
 
-            // ctrl is a fickle one because a usb keyboard usually has two and an amiga has one; map both to ctrl
-            // states: left or right down and neither previously down. so if either are down when neither /were/ down, ctrl down,
-            // and if neither are down and either /were/ down, ctrl up. right? right. i think.
+            /**
+             * ctrl is a fickle one because a usb keyboard usually has two and an amiga has one; map both to ctrl
+             * states: left or right down and neither previously down. so if either are down when neither /were/ down, ctrl down,
+             * and if neither are down and either /were/ down, ctrl up. right? right. i think.
+             */
             if ((TEST_MOD(buf[0], MOD_LCTRL) || TEST_MOD(buf[0], MOD_RCTRL)) &&
                 (!TEST_MOD(old_buf[0], MOD_LCTRL) && !TEST_MOD(old_buf[0], MOD_RCTRL))) SendAmiga(AMIGA_CTRL); // ctrl down
 
             if ((!TEST_MOD(buf[0], MOD_LCTRL) && !TEST_MOD(buf[0], MOD_RCTRL)) &&
                 (TEST_MOD(old_buf[0], MOD_LCTRL) || TEST_MOD(old_buf[0], MOD_RCTRL))) SendAmiga(AMIGA_CTRL | 0x80); // ctrl up
 
-            // right windows key is the only modifier we don't handle here, but aside from several apple keyboards,
-            // i have no pc keyboards with one. and inexplicably the apple keyboard doesn't work (likely power, plus
-            // apple's keyboard is even a pain in the ass to use on actual apple devices owing to REALLY odd
-            // proprietary power commands outside of the normal usb descriptor block specification, like idevices).
-            // since apple keyboards don't have menu, but they don't work anyway (see previous moan), i am not going
-            // to lose any sleep; menu is right-amiga.
+            /**
+             * right windows key is the only modifier we don't handle here, but aside from several apple keyboards,
+             * i have no pc keyboards with one. and inexplicably the apple keyboard doesn't work (likely power, plus
+             * apple's keyboard is even a pain in the ass to use on actual apple devices owing to REALLY odd
+             * proprietary power commands outside of the normal usb descriptor block specification, like idevices).
+             * since apple keyboards don't have menu, but they don't work anyway (see previous moan), i am not going
+             * to lose any sleep; menu is right-amiga.
+             */
         }
 
         // handle key up events
@@ -606,13 +619,15 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
             }
         }
 
-        // check for ctrl-amiga-amiga and issue reset.
-        // @todo in future, implement "reset warning" as per
-        // https://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0178.html
-        // i notice that linux-m68k on the amiga (waaaay back in the mid 1990s) used to emergency sync in
-        // preparation for hard reset then attempt to drag out the reset until the very last ms in order to
-        // prevent data loss. i don't actually know if amigaos responds to AMIGA_RESET (0x78). i'd like to think
-        // it does (adcd suggests it does).
+        /**
+         * check for ctrl-amiga-amiga and issue reset.
+         * @todo in future, implement "reset warning" as per
+         * https://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0178.html
+         * i notice that linux-m68k on the amiga (waaaay back in the mid 1990s) used to emergency sync in
+         * preparation for hard reset then attempt to drag out the reset until the very last ms in order to
+         * prevent data loss. i don't actually know if amigaos responds to AMIGA_RESET (0x78). i'd like to think
+         * it does (adcd suggests it does).
+         */
         if ((TrinityCheck(old_buf_len, old_buf) == true) && (TrinityCheck(len, buf) == false))
             SendAmigaReset();
 
