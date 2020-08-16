@@ -78,7 +78,11 @@
 #define MOD_RWIN        7
 
 // modifier test
-#define TEST_MOD(A, B) (A & (1 << B))
+#define TEST_MOD(A, B)          (A & (1 << B))
+
+// macro to simplify setting/clearing bits
+#define BIT_SET(REGISTER, BIT)      REGISTER |= (1 << BIT)
+#define BIT_CLEAR(REGISTER, BIT)    REGISTER &= ~(1 << BIT)
 
 // amiga keycodes (transcribed from amiga developer cd 2.1)
 #define AMIGA_BACKTICK  0x00 // backtick / shifted tilde
@@ -246,7 +250,7 @@ volatile uint8_t sync_state = IDLE;
 ISR(TIMER1_COMPA_vect)
 {
     // isr doesn't run until TIMER1 is setup in AmigaHID
-    AMIGAHW_DATA_PORT &= ~(1 << AMIGAHW_DATA);
+    BIT_CLEAR(AMIGAHW_DATA_PORT, AMIGAHW_DATA);
     sync_state = SYNC;
 }
 
@@ -293,24 +297,23 @@ void AmigaHID::Setup(USB *p)
     AMIGAHW_RESET_DIRREG = 0;
     AMIGAHW_RESET_PORT = 0;
 
-    AMIGAHW_CLOCK_DIRREG |= (1 << AMIGAHW_CLOCK);
-    AMIGAHW_DATA_DIRREG |= (1 << AMIGAHW_DATA);
-    AMIGAHW_RESET_DIRREG |= (1 << AMIGAHW_RESET);
+    BIT_SET(AMIGAHW_CLOCK_DIRREG, AMIGAHW_CLOCK);
+    BIT_SET(AMIGAHW_DATA_DIRREG, AMIGAHW_DATA);
+    BIT_SET(AMIGAHW_RESET_DIRREG, AMIGAHW_RESET);
 
-    AMIGAHW_CLOCK_PORT |= (1 << AMIGAHW_CLOCK);
-    AMIGAHW_DATA_PORT |= (1 << AMIGAHW_DATA);
-    AMIGAHW_RESET_PORT |= (1 << AMIGAHW_RESET);
+    BIT_SET(AMIGAHW_CLOCK_PORT, AMIGAHW_CLOCK);
+    BIT_SET(AMIGAHW_DATA_PORT, AMIGAHW_DATA);
+    BIT_SET(AMIGAHW_RESET_PORT, AMIGAHW_RESET);
 
     /**
      * setup the amiga keyboard sync signal timer; TIMER1 is used because it's 16-bit
      * (thanks again for t33bu's wireless-amiga-keyboard for avr-side logic)
      */
-    TCCR1B |= (1 << WGM12);
-    TIMSK1 |= (1 << OCIE1A);
-    OCR1AH = 0x3d;
-    OCR1AL = 0x09;
-    TCCR1B |= (1 << CS12);
-    TCCR1B |= (1 << CS10);
+    BIT_SET(TCCR1B, WGM12);
+    BIT_SET(TIMSK1, OCIE1A);
+    OCR1A = 0x3d09;
+    BIT_SET(TCCR1B, CS12);
+    BIT_SET(TCCR1B, CS10);
 
     // restart interrupts, and the sync signal timer should start
     interrupts();
@@ -407,24 +410,24 @@ void AmigaHID::SendAmiga(uint8_t keycode)
      */
     for (i = 0; i < 8; i++) {
         if (skeycode & bit)
-            AMIGAHW_DATA_PORT &= ~(1 << AMIGAHW_DATA);
+            BIT_CLEAR(AMIGAHW_DATA_PORT, AMIGAHW_DATA);
         else
-            AMIGAHW_DATA_PORT |= (1 << AMIGAHW_DATA);
+            BIT_SET(AMIGAHW_DATA_PORT, AMIGAHW_DATA);
 
         _delay_us(20); // hold keyboard data line low for 20us before sending clock
-        AMIGAHW_CLOCK_PORT &= ~(1 << AMIGAHW_CLOCK);
+        BIT_CLEAR(AMIGAHW_CLOCK_PORT, AMIGAHW_CLOCK);
         _delay_us(20); // hold clock low for 20us
-        AMIGAHW_CLOCK_PORT |= (1 << AMIGAHW_CLOCK);
+        BIT_SET(AMIGAHW_CLOCK_PORT, AMIGAHW_CLOCK);
         _delay_us(50); // hold clock high for 50us
 
         // rshift bit before next iteration
         bit >>= 1;
     }
 
-    AMIGAHW_DATA_PORT |= (1 << AMIGAHW_DATA);
-    AMIGAHW_DATA_DIRREG &= ~(1 << AMIGAHW_DATA); // set data line to input
+    BIT_SET(AMIGAHW_DATA_PORT, AMIGAHW_DATA);
+    BIT_CLEAR(AMIGAHW_DATA_DIRREG, AMIGAHW_DATA);   // set data line to input
     _delay_ms(5); // handshake wait up to 143ms
-    AMIGAHW_DATA_DIRREG |= (1 << AMIGAHW_DATA); // set data line to output
+    BIT_SET(AMIGAHW_DATA_DIRREG, AMIGAHW_DATA);     // set data line to output
 }
 
 // called on each packet event returned
@@ -592,9 +595,9 @@ bool AmigaHID::KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf)
 void AmigaHID::SendAmigaReset()
 {
     DebugPrint("*** AMIGA RESET *** asserting hard reset");
-    AMIGAHW_RESET_PORT &= ~(1 << AMIGAHW_RESET);
+    BIT_CLEAR(AMIGAHW_RESET_PORT, AMIGAHW_RESET);
     _delay_ms(500); // taken from t33bu's wireless-amiga-keyboard; minimum 250ms, this is .5s
-    AMIGAHW_RESET_PORT |= (1 << AMIGAHW_RESET);
+    BIT_SET(AMIGAHW_RESET_PORT, AMIGAHW_RESET);
     DebugPrint("*** AMIGA RESET *** complete");
 }
 
@@ -617,7 +620,7 @@ void loop()
 
     // stop sync if one timer iteration has passed
     if ((sync_state == SYNC) && (TCNT1 > 0)) {
-        AMIGAHW_DATA_PORT |= (1 << AMIGAHW_DATA);
+        BIT_SET(AMIGAHW_DATA_PORT, AMIGAHW_DATA);
         sync_state = IDLE;
     }
 }
