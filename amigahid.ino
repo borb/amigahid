@@ -273,7 +273,8 @@ class AmigaHID : public HIDComposite
         void DebugPrint(char *msg);
         void SendAmiga(uint8_t keycode);
         bool KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf);
-        void SendAmigaReset();
+        void InitiateAmigaReset();
+        void EndAmigaReset();
         bool TrinityCheck(uint8_t len, uint8_t *buf);
 };
 
@@ -548,8 +549,10 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
          * prevent data loss. i don't actually know if amigaos responds to AMIGA_RESET (0x78). i'd like to think
          * it does (adcd suggests it does).
          */
+        if ((TrinityCheck(old_buf_len, old_buf) == false) && (TrinityCheck(len, buf) == true))
+            InitiateAmigaReset();
         if ((TrinityCheck(old_buf_len, old_buf) == true) && (TrinityCheck(len, buf) == false))
-            SendAmigaReset();
+            EndAmigaReset();
 
         DebugPrint("[end processing iteration]\n");
     }
@@ -591,14 +594,18 @@ bool AmigaHID::KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf)
     return false;
 }
 
-// reset the amiga
-void AmigaHID::SendAmigaReset()
+// reset key sequence down
+void AmigaHID::InitiateAmigaReset()
 {
-    DebugPrint("*** AMIGA RESET *** asserting hard reset");
+    DebugPrint("*** AMIGA RESET *** holding reset line");
     BIT_CLEAR(AMIGAHW_RESET_PORT, AMIGAHW_RESET);
-    _delay_ms(500); // taken from t33bu's wireless-amiga-keyboard; minimum 250ms, this is .5s
+}
+
+// reset key sequence up
+void AmigaHID::EndAmigaReset()
+{
+    DebugPrint("*** AMIGA RESET *** clearing reset line");
     BIT_SET(AMIGAHW_RESET_PORT, AMIGAHW_RESET);
-    DebugPrint("*** AMIGA RESET *** complete");
 }
 
 USB         Usb;
