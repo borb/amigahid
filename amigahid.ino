@@ -200,147 +200,43 @@
 #define B_IF_PROTOCOL_KEYBOARD \
                         0x01
 
-struct hidamigatable
-{
-    uint8_t hid_keycode;
-    uint8_t amiga_keycode;
-};
-
 /**
  * this layout is very US-centric right now, which may not be a bad thing, but @todo check for non-US maps
  * interesting how hid keyboards are alphabetical, amiga are qwerty layout. actually not interesting at all.
- * also: @todo replace this with an indexable array so we refer to it by offset, as per
- * drivers/hid/hid-input.c line 27 in the linux kernel source.
  */
-static const struct hidamigatable key_map[] = {
-    // 0x00 is no keypress (which we already ignore)
-    // 0x01 phantom key - in all slots if too many keys are pressed (i have no keyboards which produce this)
-    // 0x02 keyboard post fail
-    // 0x03 undefined keyboard error
-    { 0x04, AMIGA_A },
-    { 0x05, AMIGA_B },
-    { 0x06, AMIGA_C },
-    { 0x07, AMIGA_D },
-    { 0x08, AMIGA_E },
-    { 0x09, AMIGA_F },
-    { 0x0a, AMIGA_G },
-    { 0x0b, AMIGA_H },
-    { 0x0c, AMIGA_I },
-    { 0x0d, AMIGA_J },
-    { 0x0e, AMIGA_K },
-    { 0x0f, AMIGA_L },
-    { 0x10, AMIGA_M },
-    { 0x11, AMIGA_N },
-    { 0x12, AMIGA_O },
-    { 0x13, AMIGA_P },
-    { 0x14, AMIGA_Q },
-    { 0x15, AMIGA_R },
-    { 0x16, AMIGA_S },
-    { 0x17, AMIGA_T },
-    { 0x18, AMIGA_U },
-    { 0x19, AMIGA_V },
-    { 0x1a, AMIGA_W },
-    { 0x1b, AMIGA_X },
-    { 0x1c, AMIGA_Y },
-    { 0x1d, AMIGA_Z },
-    { 0x1e, AMIGA_ONE },
-    { 0x1f, AMIGA_TWO },
-    { 0x20, AMIGA_THREE },
-    { 0x21, AMIGA_FOUR },
-    { 0x22, AMIGA_FIVE },
-    { 0x23, AMIGA_SIX },
-    { 0x24, AMIGA_SEVEN },
-    { 0x25, AMIGA_EIGHT },
-    { 0x26, AMIGA_NINE },
-    { 0x27, AMIGA_ZERO },
-    { 0x28, AMIGA_RETURN },
-    { 0x29, AMIGA_ESC },
-    { 0x2a, AMIGA_BACKSP },
-    { 0x2b, AMIGA_TAB },
-    { 0x2c, AMIGA_SPACE },
-    { 0x2d, AMIGA_DASH },
-    { 0x2e, AMIGA_EQUALS },
-    { 0x2f, AMIGA_OSQPARENS },
-    { 0x30, AMIGA_CSQPARENS },
-    { 0x31, AMIGA_BACKSLASH },
-    // 0x32 non-US #~
-    { 0x33, AMIGA_SEMICOLON },
-    { 0x34, AMIGA_QUOTE },
-    { 0x35, AMIGA_BACKTICK },
-    { 0x36, AMIGA_COMMA },
-    { 0x37, AMIGA_PERIOD },
-    { 0x38, AMIGA_SLASH },
-    { 0x39, AMIGA_CAPSLOCK },
-    { 0x3a, AMIGA_F1 },
-    { 0x3b, AMIGA_F2 },
-    { 0x3c, AMIGA_F3 },
-    { 0x3d, AMIGA_F4 },
-    { 0x3e, AMIGA_F5 },
-    { 0x3f, AMIGA_F6 },
-    { 0x40, AMIGA_F7 },
-    { 0x41, AMIGA_F8 },
-    { 0x42, AMIGA_F9 },
-    { 0x43, AMIGA_F10 },
-    { 0x44, AMIGA_UNKNOWN }, // hid f11
-    { 0x45, AMIGA_UNKNOWN }, // hid f12
-    { 0x46, AMIGA_UNKNOWN }, // hid print screen/sys rq
-    { 0x47, AMIGA_UNKNOWN }, // hid scroll lock (wtf scrollocks lol)
-    { 0x48, AMIGA_UNKNOWN }, // hid pause/break
-    { 0x49, AMIGA_HELP }, // hid insert key
-    { 0x4a, AMIGA_UNKNOWN }, // hid home key
-    { 0x4b, AMIGA_UNKNOWN }, // hid page up key
-    { 0x4c, AMIGA_DELETE }, // hid forward delete key
-    { 0x4d, AMIGA_UNKNOWN }, // hid end key
-    { 0x4e, AMIGA_UNKNOWN }, // hid page down key
-    { 0x4f, AMIGA_RIGHT },
-    { 0x50, AMIGA_LEFT },
-    { 0x51, AMIGA_DOWN },
-    { 0x52, AMIGA_UP },
-    { 0x53, AMIGA_UNKNOWN }, // amiga has no concept of numlock
-    { 0x54, AMIGA_KPSLASH },
-    { 0x55, AMIGA_KPAST },
-    { 0x56, AMIGA_KPDASH },
-    { 0x57, AMIGA_KPPLUS },
-    { 0x58, AMIGA_KPENTER },
-    { 0x59, AMIGA_KPONE },
-    { 0x5a, AMIGA_KPTWO },
-    { 0x5b, AMIGA_KPTHREE },
-    { 0x5c, AMIGA_KPFOUR },
-    { 0x5d, AMIGA_KPFIVE },
-    { 0x5e, AMIGA_KPSIX },
-    { 0x5f, AMIGA_KPSEVEN },
-    { 0x60, AMIGA_KPEIGHT },
-    { 0x61, AMIGA_KPNINE },
-    { 0x62, AMIGA_KPZERO },
-    { 0x63, AMIGA_KPPERIOD },
-    // 0x64 non-US \|
-    { 0x65, AMIGA_RAMIGA }, // hid menu key
-    // 0x66 power
-    // 0x67 keypad =
-    // 0x68-0x73 f13-f24
-    // 0x74 execute
-    // 0x75 help, ironically since the amiga has a help key
-    // 0x76 props/menu, but isn't that 0x65?
-    // 0x77 select
-    // 0x78 stop
-    // 0x79 again
-    // 0x7a undo
-    // 0x7b cut
-    // 0x7c copy
-    // 0x7d paste
-    // 0x7e find
-    // 0x7f mute
-    // 0x80 vol up
-    // 0x81 vol down
-    // 0x82 locking caps lock
-    // 0x83 locking num lock
-    // 0x84 locking scroll lock
-    // 0x85 keypad comma
-    // 0x86 keypad =, but isn't that 0x65?
-    // 0x87-0x98 international, likely language specific. @todo amiga latin variants (es, fi, de, fr, etc.?)
-    // there are more, right up to 0xfb, many of which are media keys; possible future usage?
-
-    { 0 } // end of table
+static const uint8_t mapHidToAmiga[256] = {
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_A,         AMIGA_B,         AMIGA_C,         AMIGA_D,         // 0x00 (position of first key on line)
+    AMIGA_E,         AMIGA_F,         AMIGA_G,         AMIGA_H,         AMIGA_I,         AMIGA_J,         AMIGA_K,         AMIGA_L,         // 0x08
+    AMIGA_M,         AMIGA_N,         AMIGA_O,         AMIGA_P,         AMIGA_Q,         AMIGA_R,         AMIGA_S,         AMIGA_T,         // 0x10
+    AMIGA_U,         AMIGA_V,         AMIGA_W,         AMIGA_X,         AMIGA_Y,         AMIGA_Z,         AMIGA_ONE,       AMIGA_TWO,       // 0x18
+    AMIGA_THREE,     AMIGA_FOUR,      AMIGA_FIVE,      AMIGA_SIX,       AMIGA_SEVEN,     AMIGA_EIGHT,     AMIGA_NINE,      AMIGA_ZERO,      // 0x20
+    AMIGA_RETURN,    AMIGA_ESC,       AMIGA_BACKSP,    AMIGA_TAB,       AMIGA_SPACE,     AMIGA_DASH,      AMIGA_EQUALS,    AMIGA_OSQPARENS, // 0x28
+    AMIGA_CSQPARENS, AMIGA_BACKSLASH, AMIGA_UNKNOWN,   AMIGA_SEMICOLON, AMIGA_QUOTE,     AMIGA_BACKTICK,  AMIGA_COMMA,     AMIGA_PERIOD,    // 0x30
+    AMIGA_SLASH,     AMIGA_CAPSLOCK,  AMIGA_F1,        AMIGA_F2,        AMIGA_F3,        AMIGA_F4,        AMIGA_F5,        AMIGA_F6,        // 0x38
+    AMIGA_F7,        AMIGA_F8,        AMIGA_F9,        AMIGA_F10,       AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x40
+    AMIGA_UNKNOWN,   AMIGA_HELP,      AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_DELETE,    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_RIGHT,     // 0x48
+    AMIGA_LEFT,      AMIGA_DOWN,      AMIGA_UP,        AMIGA_UNKNOWN,   AMIGA_KPSLASH,   AMIGA_KPAST,     AMIGA_KPDASH,    AMIGA_KPPLUS,    // 0x50
+    AMIGA_KPENTER,   AMIGA_KPONE,     AMIGA_KPTWO,     AMIGA_KPTHREE,   AMIGA_KPFOUR,    AMIGA_KPFIVE,    AMIGA_KPSIX,     AMIGA_KPSEVEN,   // 0x58
+    AMIGA_KPEIGHT,   AMIGA_KPNINE,    AMIGA_KPZERO,    AMIGA_KPPERIOD,  AMIGA_UNKNOWN,   AMIGA_RAMIGA,    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x60
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x68
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x70
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x78
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x80
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x88
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x90
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0x98
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xa0
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xa8
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xb0
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xb8
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xc0
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xc8
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xd0
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xd8
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xe0
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xe8
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   // 0xf0
+    AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN,   AMIGA_UNKNOWN    // 0xf8
 };
 
 enum SYNC_STATE { IDLE, SYNC };
@@ -373,7 +269,6 @@ class AmigaHID : public HIDComposite
         void DebugPrint(char *msg);
         void SendAmiga(uint8_t keycode);
         bool KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf);
-        uint8_t XlateHIDToAmiga(uint8_t code);
         void SendAmigaReset();
         bool TrinityCheck(uint8_t len, uint8_t *buf);
 };
@@ -587,7 +482,7 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
         for (i = 2; i < old_buf_len; i++) {
             // check if a key in the last buffer iteration is absent from the current iteration, and release it if so
             if (old_buf[i] && !KeyInBuffer(old_buf[i], len, buf)) {
-                translated_code = XlateHIDToAmiga(old_buf[i]);
+                translated_code = mapHidToAmiga[old_buf[i]];
 
                 if (translated_code == AMIGA_CAPSLOCK) {
                     DebugPrint("Caps lock on up event");
@@ -605,7 +500,7 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
         for (i = 2; i < len; i++) {
             // check if a key in the current buffer iteration is absent from the previous iteration, and send down event if so
             if (buf[i] && !KeyInBuffer(buf[i], old_buf_len, old_buf)) {
-                translated_code = XlateHIDToAmiga(buf[i]);
+                translated_code = mapHidToAmiga[buf[i]];
 
                 // check if that key was caps lock and adjust the class property (only on down)
                 if (translated_code == AMIGA_CAPSLOCK) {
@@ -691,22 +586,6 @@ bool AmigaHID::KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf)
             return true;
 
     return false;
-}
-
-uint8_t AmigaHID::XlateHIDToAmiga(uint8_t code)
-{
-    uint8_t i;
-
-    for (i = 0; key_map[i].hid_keycode; i++)
-        if (key_map[i].hid_keycode == code)
-            return key_map[i].amiga_keycode;
-
-    /**
-     * avr-libc doesn't support exceptions, otherwise i'd use one here.
-     * (https://www.nongnu.org/avr-libc/user-manual/FAQ.html#faq_cplusplus)
-     * 0xff is a magic number in amiga keyboard terms, but SendAmiga will filter it out and ignore it.
-     */
-    return 0xff;
 }
 
 // reset the amiga
