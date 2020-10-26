@@ -4,6 +4,8 @@
  * with a small sprinkling here and there.
  */
 
+#include "uart.h"
+
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/setbaud.h>
