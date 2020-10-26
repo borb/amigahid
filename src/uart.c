@@ -38,7 +38,7 @@ FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 FILE uart_input = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
 FILE uart_io = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 
-void uart_init(void)
+void uart_init()
 {
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
