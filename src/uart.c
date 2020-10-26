@@ -16,7 +16,6 @@
 #   error Baud rate not specified; #define BAUD or use -DBAUD=x
 #endif
 
-
 int uart_putchar(char c, FILE *stream)
 {
     if (c == '\n') {
