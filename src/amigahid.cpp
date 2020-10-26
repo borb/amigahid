@@ -33,10 +33,13 @@
 #include <usbhub.h>
 #include <SPI.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include "uart.h"
 
 // debug
-//#define DEBUG           1
-#define DEBUG_USB       0x80 // 0xff for maximum, 0x00 for off
+#ifndef DEBUG_USB
+#   define DEBUG_USB       0x00 // 0xff for maximum, 0x00 for off
+#endif
 
 /**
  * arduino pins we're going to use (@todo what to do with floppy & power/filter in future?).
@@ -270,7 +273,7 @@ class AmigaHID : public HIDComposite
         bool SelectInterface(uint8_t iface, uint8_t proto);
 
     private:
-        void DebugPrint(char *msg);
+        void DebugPrint(const char *fmt, ...);
         void SendAmiga(uint8_t keycode);
         bool KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf);
         void InitiateAmigaReset();
@@ -326,14 +329,12 @@ void AmigaHID::Setup(USB *p)
     SendAmiga(AMIGA_TERMPOWER);
 
 #ifdef DEBUG
-    Serial.begin(115200);
-    while (!Serial);
-    DebugPrint("Amiga HID adapter for Arduino ADK/MAX3421E by nine https://github.com/borb/amigahid");
-    DebugPrint("Starting in debug mode.");
+    DebugPrint("Amiga HID adapter for Arduino ADK/MAX3421E by nine https://github.com/borb/amigahid\n");
+    DebugPrint("Starting in debug mode.\n");
 #endif
 
     if (p->Init() == -1) {
-        DebugPrint("USB did not start successfully - aborting.");
+        DebugPrint("USB did not start successfully - aborting.\n");
         abort(); // does avr-libc abort? does it just while(1){} ?
     }
 
@@ -343,15 +344,20 @@ void AmigaHID::Setup(USB *p)
     caps_lock = false;
 
     // delay whilst devices enumerate (may not be needed)
-    delay(200);
+    _delay_ms(200);
 }
 
 // print out debug messages
-void AmigaHID::DebugPrint(char *msg)
+void AmigaHID::DebugPrint(const char *fmt, ...)
 {
+    va_list args;
+    va_start(args, fmt);
+
 #ifdef DEBUG
-    Serial.println(msg);
+    vprintf(fmt, args);
 #endif
+
+    va_end(args);
 }
 
 // select only keyboards for data
@@ -362,12 +368,12 @@ bool AmigaHID::SelectInterface(uint8_t iface, uint8_t proto)
      * never used
      */
     if (proto == B_IF_PROTOCOL_KEYBOARD) {
-        DebugPrint("HID keyboard attached");
+        DebugPrint("HID keyboard attached\n");
         return true;
     }
 
     // reject everything if it's not a keyboard
-    DebugPrint("HID device attached and ignored (not keyboard)");
+    DebugPrint("HID device attached and ignored (not keyboard)\n");
     return false;
 }
 
@@ -382,7 +388,7 @@ void AmigaHID::SendAmiga(uint8_t keycode)
 
     // check for unknown keycode and ignore
     if (keycode == AMIGA_UNKNOWN) {
-        DebugPrint("Cowardly refusing to send unknown keycode to Amiga.");
+        DebugPrint("Cowardly refusing to send unknown keycode to Amiga.\n");
         return;
     }
 
@@ -393,15 +399,12 @@ void AmigaHID::SendAmiga(uint8_t keycode)
         skeycode |= 1;
 
 #ifdef DEBUG
-    char *buf = malloc(256);
-    snprintf(buf, 256, "Sending 0x%02x code to the Amiga", keycode);
-    DebugPrint(buf);
-    free(buf);
+    DebugPrint("Sending 0x%02x: ", keycode);
 
     if (keycode & 0x80)
-        DebugPrint("Sending keyup for code to Amiga");
+        DebugPrint("keyup\n");
     else
-        DebugPrint("Sending keydown for code to Amiga");
+        DebugPrint("keydown\n");
 #endif
 
     /**
@@ -489,12 +492,12 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
                 translated_code = mapHidToAmiga[old_buf[i]];
 
                 if (translated_code == AMIGA_CAPSLOCK) {
-                    DebugPrint("Caps lock on up event");
+                    DebugPrint("Caps lock on up event\n");
                     caps_trap = true;
                 }
 
                 if (caps_trap && caps_lock)
-                    DebugPrint("Not sending key up event for toggling caps lock on");
+                    DebugPrint("Not sending key up event for toggling caps lock on\n");
                 else
                     SendAmiga(translated_code | 0x80); // key up
             }
@@ -508,20 +511,20 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
 
                 // check if that key was caps lock and adjust the class property (only on down)
                 if (translated_code == AMIGA_CAPSLOCK) {
-                    DebugPrint("Caps lock on down event");
+                    DebugPrint("Caps lock on down event: ");
                     if (caps_lock) {
-                        DebugPrint("Turning caps lock off");
+                        DebugPrint("turning caps lock off\n");
                         caps_lock = false;
                         caps_trap = true;
                     } else {
-                        DebugPrint("Turning caps lock on");
+                        DebugPrint("turning caps lock on\n");
                         caps_lock = true;
                         caps_trap = true;
                     }
                 }
 
                 if (caps_trap && !caps_lock)
-                    DebugPrint("Not sending key down event for toggling caps lock off");
+                    DebugPrint("Not sending key down event for toggling caps lock off\n");
                 else
                     SendAmiga(translated_code); // key down
             }
@@ -529,7 +532,7 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
 
         // change caps lock led on keyboard (amiga has no num/scroll lock leds, so ignore)
         if (caps_trap) {
-            DebugPrint("Calling hid::SetReport to update keyboard LED status");
+            DebugPrint("Calling hid::SetReport to update keyboard LED status\n");
 
             if (caps_lock)
                 leds = REP_CAPSLOCK;
@@ -559,7 +562,7 @@ void AmigaHID::ParseHIDData(USBHID *hid, uint8_t ep, bool is_rpt_id, uint8_t len
 
     // after processing, store the current buffer iteration so we can use it as a reference for next time
     if (len > HID_BUF_MAX) {
-        DebugPrint("FATAL ERROR: HID iteration has buffer exceeding size of HID_BUF_MAX. Aborting all operations.");
+        DebugPrint("FATAL ERROR: HID iteration has buffer exceeding size of HID_BUF_MAX. Aborting all operations.\n");
         abort();
     }
     old_buf_len = len;
@@ -597,14 +600,14 @@ bool AmigaHID::KeyInBuffer(uint8_t code, uint8_t len, uint8_t *buf)
 // reset key sequence down
 void AmigaHID::InitiateAmigaReset()
 {
-    DebugPrint("*** AMIGA RESET *** holding reset line");
+    DebugPrint("*** AMIGA RESET *** holding reset line\n");
     BIT_CLEAR(AMIGAHW_RESET_PORT, AMIGAHW_RESET);
 }
 
 // reset key sequence up
 void AmigaHID::EndAmigaReset()
 {
-    DebugPrint("*** AMIGA RESET *** clearing reset line");
+    DebugPrint("*** AMIGA RESET *** clearing reset line\n");
     BIT_SET(AMIGAHW_RESET_PORT, AMIGAHW_RESET);
 }
 
@@ -615,7 +618,12 @@ AmigaHID    amigaHid(&Usb);
 // usual arduino setup
 void setup()
 {
-    // run setup; if debug is set, inits serial
+#ifdef DEBUG
+    // debug is on; init serial
+    uart_init();
+#endif
+
+    // run setup
     amigaHid.Setup(&Usb);
 }
 
