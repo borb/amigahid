@@ -63,7 +63,7 @@ my utmost thanks to:
 * the arduino project: [homepage](https://www.arduino.cc)
 * the authors of the usb host shield library: [homepage](https://felis.github.io/USB_Host_Shield_2.0/)
 * teemu leppänen's wireless-amiga-keyboard source, for which i owe a debt of gratitude: [homepage](https://github.com/t33bu/wireless-amiga-keyboard/)
-* platformio for their excellent framework to help grow larger projects outside of the arduini ide: [homepage](https://platformio.org/)
+* platformio for their excellent framework to help grow larger projects outside of the arduino ide: [homepage](https://platformio.org/)
 
 ## license
 
