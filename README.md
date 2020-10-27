@@ -12,11 +12,22 @@ it was developed with the amiga 500 in mind with the purpose of allowing an exte
 
 ## usage
 
-this firmware uses the excellent [usb host shield](https://felis.github.io/USB_Host_Shield_2.0/) library, which in turn depends on the arduino library. it was developed using an arduino board and in the arduino ide. whilst i have no doubt it will build using other tools (platformio?) or gcc-avr + avr-libc, i would strongly recommend using the arduino ide to produce the firmware prior to uploading it to your avr if you are not using an arduino directly.
+this firmware uses the excellent [usb host shield](https://felis.github.io/USB_Host_Shield_2.0/) library, which in turn depends on the arduino library. it was developed using an arduino board and requires platformio to build. ensure python3 is installed and run:
 
-near the top of the source (in [amigahid.ino](amigahid.ino)) there are `AMIGAHW_` definitions which declare which pins to attach the amiga 500 keyboard header to. carefully read these and attach using dupont wires or whatever your favourite patching mechanism is. if you want to relocate to pins more convenient for you, then adjust the pins but do not forget to adjust the corresponding `_PORT` (defines Port Output RegisTer) and `_DIRREG` (DDR, Data Direction Register) definitions. connect a common ground between the amiga keyboard header and the avr/arduino. this may magically spring to life.
+```shell
+$ pip install -U platformio
+$ pio run
+```
 
-the default mapping is: PL0 for amiga keyboard clock signal, PL2 for amiga keyboard data signal, and PL4 for amiga keyboard reset signal.
+the firmware should be output in `.pio/build/megaADK/firmware.hex` and can be flashed with avrdude:
+
+```shell
+$ avrdude -U flash:w:.pio/build/megaADK/firmware.hex:i -D -P /dev/ttyUSB0 -b 115200 -p atmega2560 -c wiring
+```
+
+if you wish to change the pins which you use to connect the arduino to the amiga, look near the top of the source (in [src/amigahid.cpp](src/amigahid.cpp)). there are `AMIGAHW_` definitions which declare which pins to attach the amiga 500 keyboard header to. carefully read these and attach using dupont wires or whatever your favourite patching mechanism is. if you want to relocate to pins more convenient for you, then adjust the pins but do not forget to adjust the corresponding `_PORT` (defines Port Output RegisTer) and `_DIRREG` (DDR, Data Direction Register) definitions. connect a common ground between the amiga keyboard header and the avr/arduino. this may magically spring to life.
+
+the default mapping is: PL0 for amiga keyboard clock signal, PL2 for amiga keyboard data signal, and PL4 for amiga keyboard reset signal. if you want a simple life, just keep these defaults.
 
 attach PL0 to amiga 500 keyboard pin 1, PL2 to pin 2 and PL4 to pin 3. attach ground on your board to pin 6.
 
@@ -52,6 +63,7 @@ my utmost thanks to:
 * the arduino project: [homepage](https://www.arduino.cc)
 * the authors of the usb host shield library: [homepage](https://felis.github.io/USB_Host_Shield_2.0/)
 * teemu leppänen's wireless-amiga-keyboard source, for which i owe a debt of gratitude: [homepage](https://github.com/t33bu/wireless-amiga-keyboard/)
+* platformio for their excellent framework to help grow larger projects outside of the arduini ide: [homepage](https://platformio.org/)
 
 ## license
 
