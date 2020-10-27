@@ -34,7 +34,11 @@
 #include <SPI.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include "uart.h"
+
+extern "C"
+{
+#   include "uart.h"
+}
 
 // debug
 #ifndef DEBUG_USB
