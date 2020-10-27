@@ -296,7 +296,7 @@ void AmigaHID::Setup(USB *p)
         old_buf[i] = 0;
 
     // sort out the amiga-side ports & issue reset before getting messy with serial & usb
-    noInterrupts();
+    cli();
 
     AMIGAHW_CLOCK_DIRREG = 0;
     AMIGAHW_CLOCK_PORT = 0;
@@ -324,7 +324,7 @@ void AmigaHID::Setup(USB *p)
     BIT_SET(TCCR1B, CS10);
 
     // restart interrupts, and the sync signal timer should start
-    interrupts();
+    sei();
 
     // send the amiga the startup notifications (thanks t33bu!)
     _delay_ms(1000);
