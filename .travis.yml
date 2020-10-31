@@ -13,3 +13,12 @@ install:
 
 script:
     - platformio run
+    - cp -v .pio/build/megaADK/firmware.hex megaadk-firmware.hex
+
+deploy:
+    provider: releases
+    api_key: ${api_key}
+    file: "megaadk-firmware.hex"
+    skip_cleanup: true
+    on:
+        tags: true
