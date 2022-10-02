@@ -1,3 +1,7 @@
+# read first!
+
+**whilst this project still works, i am not actively working on this codebase; all of my amiga input-device related effort goes into a project i started to replace this one - [borb/amigahid-pico](https://github.com/borb/amigahid-pico). since the arduino adk/usb host shield/uhs mini is no longer in production and somewhat hard to come by, i strongly suggest trying that project out.**
+
 # amigahid
 
 please read the disclaimer first. i don't want anyone to be responsible for breaking any hardware.
